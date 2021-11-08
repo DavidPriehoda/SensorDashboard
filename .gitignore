@@ -1,0 +1,5 @@
+*.code-workspace
+dashboard/dashboard/__pycache__
+*.env
+dashboard/dashboardEnv
+sensors\sensorEnv
