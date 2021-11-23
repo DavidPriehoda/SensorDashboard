@@ -1,0 +1,49 @@
+#menu-open-btn{
+    font-size: 64px;
+}
+
+#menu-close-btn{
+    float: right;
+    font-size: 64px;
+}
+
+#sidenav{
+    width: 20vw;
+    height: 100vh;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    background-color: #0B7189;
+
+    transform: translate3d(-100vw,0,0);
+
+    transition: transform .3s cubic-bezier(0, .52, 0, 1);
+
+    overflow: hidden;
+}
+
+#sidenav.show{
+    transform: translate3d(0vw,0,0);
+}
+
+#sidenav ul{
+    margin-top: 5vh;
+}
+
+#sidenav ul li{
+    list-style:none;
+}
+
+#sidenav ul a{
+    display: block;
+    text-decoration: none;
+    font-size: 32px;
+    color: #000;
+}
+
+#logout-btn{
+    position: absolute;
+    bottom: 5px;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  
+  <head>
+    <link rel=stylesheet type=text/css href="{{ url_for('static',filename='css/navbar.css') }}">
+  </head>
+  
+  <body>
+    <div id="sidenav">
+      <span class="material-icons" id="menu-close-btn">close</span>
+      <ul>
+        <li><a href="#">MENU 1</a></li>
+        <li><a href="#">MENU 2</a></li>
+        <li><a href="#">MENU 3</a></li>
+        <li><a href="#">MENU 4</a></li>
+        <li id="logout-btn"><a href="/login">LOG OUT</a></li>
+      </ul>
+    </div>
+    <span class="material-icons" id="menu-open-btn">menu</span>
+
+
+    <script>
+      var menuButton = document.querySelector("#menu-open-btn");
+      var closeButton = document.querySelector("#menu-close-btn");
+      var menu = document.querySelector("#sidenav");
+
+      menuButton.addEventListener("click", showmenu, false);
+      closeButton.addEventListener("click",hidemenu, false);
+
+      function showmenu(e){
+        menu.classList.add("show");
+        document.body.style.overflow = "hidden";
+      }
+
+      function hidemenu(e){
+        menu.classList.remove("show");
+        e.stopPropagation();
+
+        document.body.style.overflow = "auto";
+      }
+
+
+    </script>
+
+  </body>
+</html>
+

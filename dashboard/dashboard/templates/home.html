@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.6.0/chart.min.js"></script>
+{% endblock head %}
+
+
+{% block content %}
+<div id="navbar">
+    {% include 'includes/_navbar.html' %}
+</div>
+
+
+<div class = "graphBox">
+    <canvas id="graph"></canvas>
+    <p id="latestTemp"></p>
+</div>
+
+
+<script>
+    var data = JSON.parse('{{ sensor_data | tojson | safe}}');
+    xtime = Object.keys(data);
+    ytemp = Object.keys(data).map(function (key) { return data[key]; });
+
+    document.getElementById("latestTemp").innerHTML = "Last reported at " + xtime.at(-1) + ": " + ytemp.at(-1) + "°C";
+
+    var ctx = document.getElementById('graph');
+
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+        labels: xtime,
+        datasets: [{
+            label: 'Temp',
+            data: ytemp,
+            fill: false,
+        }]
+        },
+        options: {
+            scales: {
+                y: {
+                    ticks: {
+                        // Include a dollar sign in the ticks
+                        callback: function(value, index, values) {
+                            return value + "°";
+                        }
+                    }
+                },
+                x: {
+                    ticks: {
+                        callback: function(value, index, values) {
+                            return index % 3 === 0 ? this.getLabelForValue(value) : '';
+                        }
+                    }
+                }
+            }
+        }
+    })
+</script>
+
+{% endblock content %}

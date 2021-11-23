@@ -1,3 +1,92 @@
-.chartBox{
-    width: 600px;
+body {
+    background-color: #EEE0CB;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    color: #000;
+}
+
+/* Login form */
+.login-form-container{
+    width: 450px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 25px;
+  }
+
+.login-form-container h2{
+  text-align: center;
+  padding-bottom: 5px;
+}
+.login-form div{
+  margin: 10px;
+}
+
+.login-form input[type=text],input[type=password]{
+  position: relative;
+  width: 100%;
+  left: 50%;
+  transform: translate(-50%);
+  text-align: center;
+  font-size: 32px;
+  font-weight: 300;
+  outline: 0;
+  border: 0;
+  border-bottom: 1px solid #0B7189;
+  background: rgba(0, 0, 0, 0);
+  color: #000;
+}
+
+.login-form label {
+  padding: 12px 12px 12px 0;
+  display: inline-block;
+  font-size: 20px;
+}
+
+.login-form input[type=submit] {
+  background-color: #0B7189;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+.login-form input[type=submit]:hover {
+  background-color: #333533;
+}
+/*  */
+
+
+/* Welcome page */
+#welcome-page{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#welcome-page p{
+  width: 100vw;
+  font-size: 128px;
+  text-align: center;
+  animation-name: welcome-animation;
+  animation-duration: 3s;
+  animation-delay: 0s;
+}
+
+@keyframes welcome-animation {
+  0%{transform: translateY(-1000%);}
+  100% {transform: translateY(0%);}
+}
+/*  */
+
+
+.graphBox{
+  position: absolute;
+  left: 30%;
+  width: 600px;
 }

@@ -11,7 +11,7 @@ def main():
     while True:
         for entry in data:
             s = json.dumps(entry)
-            res = requests.post("http://127.0.0.1:8080/api/new_sensor_data/", json=s).json()
+            res = requests.post("http://127.0.0.1:5555/api/new_sensor_data/", json=s).json()
             print(res)
             time.sleep(10)
 
