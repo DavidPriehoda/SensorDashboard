@@ -1,0 +1,625 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<script type="text/javascript">
+</script>
+{% endblock %}
+
+{% block content %}
+<div id="navbar">
+    {% include 'includes/_navbar.html' %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="sensor_limit_modal" tabindex="-1" aria-labelledby="label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-label">Edit sensor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" id="limit-form">
+        <div class="modal-body">
+          <h6>Here you can set the limits for being alerted by the system.</h6>
+          <hr class="mx-auto w-25">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <div class="row mb-3">
+            <select id="limit-type" class="form-select w-50 mx-auto" name="limit-type"></select>
+          </div>
+          <div id="limits_parent" class="row row-cols-2">
+            {% for f in form %}
+            {% if f.id != 'csrf_token':%}
+            <div class="col mb-1 d-none" id="{{f.id}}_div">
+              {{f.label}}
+              {{f(value=sensor.get_limit(f.id))}}
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" onclick="deleteSensor();">Delete Sensor</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <input type="submit" class="btn btn-success" value="Confirm">
+        </div>
+      </form>
+      <div id="message" class="d-none alert w-50 py-1 mx-auto">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="container" class="mx-auto" style="width: 80%">
+  <div class="row ">
+    <div class="col-sm-9">
+      <div class="white-box sensor_container mb-3">
+        <h6>
+          <div class="mx-auto" id="alert" style="color:red; font-weight:bold; text-align: center;"></div>
+        </h6>
+        <span class="material-icons settings-icon px-2" data-bs-toggle="modal" data-bs-target="#sensor_limit_modal">
+          settings
+        </span>
+        <h2 class="chart-title">
+          Sensor Name:
+        </h2>
+        <p class="text-muted">{{ sensor.get_name() }}</p>
+        <p class="text-muted">ID: {{ sensor.get_id() }}</p>
+        <div class="form-group row row-cols-2">
+          <div class="form-label col-md-2" >
+            <label class="sensor_data_label align-middle" for="data_type_dropdown {{ sensor.get_id()}}">Showing:</label>
+          </div>
+          <div class="col-md-4 p-0">
+            <select class="form-select mx-auto mb-1" id="data_type_dropdown {{ sensor.get_id()}}" onclick="event.stopPropagation();"></select>
+          </div>
+          <div class="form-label col-md-2">
+            <label class="sensor_data_label align-middle" for="time_dropdown {{ sensor.get_id()}}">Since:</label>
+          </div>
+          <div class="col-md-4">
+            <select class="form-select mx-auto mb-1" id="time_dropdown {{ sensor.get_id()}}" onclick="event.stopPropagation();"></select>
+          </div>
+        </div>
+
+        <div class = "chartBox">
+          <canvas id="{{ sensor.get_id() }}"></canvas>
+        </div>
+        <div id="message_warning" class="d-none alert alert-danger w-50 py-1 mx-auto">
+
+        </div>
+        <h3 class="">Readings Summary</h3>
+        <p class="text-muted text-center">Hover over a property for more information.</p>
+        <hr class="w-25 mx-auto mb-3">
+        <h2 class="chart-sum" id="no-data"></h2>
+        <div class="row row-cols-3">
+          <div class="col">
+            <h2 class="chart-sum">
+              <div id="latest"></div>
+              <p class="font-weight-light" id="avg"></p>
+            </h2>
+          </div>
+          <div class="col">
+            <h2 class="chart-sum">
+              <p class="font-weight-light" id="max" data-toggle="tooltip" data-placement="bottom" title="TIME"></p>
+            </h2>
+          </div>
+          <div class="col">
+            <h2 class="chart-sum">
+              <p class="font-weight-light" id="min" data-toggle="tooltip" data-placement="top" title="TIME"></p>
+            </h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-3 ">
+      <div class="info-panel white-box mb-3 mx-auto w-100%">
+        <div class="row">
+          <h3 id="side-panel-title">Information</h3>
+        </div>
+        <div class="row">
+          <ol id="side-panel-list" class="info-list">
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+        var sensor_id = '{{ sensor.get_id() }}';
+
+        var data;
+        var upperLimit;
+        var lowerLimit;
+
+        var limit_options = [['in_temp_upper', 'in_temp_lower'],
+                          ['out_hum_upper', 'out_hum_lower'],
+                          ['out_airpress_upper', 'out_airpress_lower'],
+                          ['out_temp_upper', 'out_temp_lower'],
+                          ['in_hum_upper', 'in_hum_lower'],
+                          ['light_upper', 'light_lower'],
+                          ['motion_upper', 'motion_lower'],
+                          ['noise_upper', 'noise_lower'],
+                          ['in_air_pressure_upper', 'in_air_pressure_lower'],
+                          ['VOC_upper', 'VOC_lower'],
+                          ['ECO2_upper', 'ECO2_lower']];
+
+        $.get("/get_sensor_data?sensor_id="+ sensor_id +"&data_type="+ "0" +"&time_option="+ "0", function(data){
+                data = data; //{'Sensor_ID': 'ID', 'Summary':{'Avg': 0, 'Min': 0, 'Max': 0}, 'Data': [[timestamp, value], ...]}
+                upperLimit = parseInt('{{ sensor.get_limit("in_temp_upper") }}');
+                lowerLimit = parseInt('{{ sensor.get_limit("in_temp_lower") }}');
+                make_chart(data.Sensor_ID, data.Data, 0);
+                set_summary_data(data.Summary)
+            });
+
+        //Create drop down menus
+        var data_type_options = ["Temperature", "Outside humidity", "Outside air pressure", "Outside temperature", "Reported humidity", "Light", "Motion", "Noise", "Air pressure", "VOC", "ECO2"];
+        var data_type_dropdown = document.getElementById("data_type_dropdown {{ sensor.get_id()}}");
+
+        var time_options = ["Last 24 hours", "Last 7 days", "Last 30 days", "Last 6 months", "Last year", "All time"];
+        var time_dropdown = document.getElementById("time_dropdown {{ sensor.get_id()}}");
+
+        var limit_type_dropdown = document.getElementById('limit-type');
+
+        for (var option in data_type_options) {
+            var el = document.createElement("option");
+            el.textContent = data_type_options[option];
+            el.value = option;
+            data_type_dropdown.appendChild(el);
+        }
+
+        //add to limit modal
+        for (var option in data_type_options) {
+            var el = document.createElement("option");
+            el.textContent = data_type_options[option];
+            el.value = option;
+            limit_type_dropdown.appendChild(el);
+        }
+
+        for (var option in time_options) {
+            var el = document.createElement("option");
+            el.textContent = time_options[option];
+            el.value = option;
+            time_dropdown.appendChild(el);
+        }
+
+        //Add event listener to drop down menus
+        data_type_dropdown.onchange = function() {
+            $.get("/get_sensor_limit?sensor_id="+sensor_id+"&limit="+limit_options[this.value], function(data){
+                    upperLimit = parseInt(data.upperLimit);
+                    lowerLimit = parseInt(data.lowerLimit);
+                });
+
+            $.get("/get_sensor_data?sensor_id="+sensor_id+"&data_type="+this.value+"&time_option="+time_dropdown.value, function(data){
+                data = data;
+
+                console.log(upperLimit);
+
+                make_chart(data.Sensor_ID, data.Data, this.value);
+                set_summary_data(data.Summary);
+            });
+        };
+
+        time_dropdown.onchange = function() {
+            $.get("/get_sensor_limit?sensor_id="+sensor_id+"&limit="+limit_options[data_type_dropdown.value], function(data){
+                    upperLimit = parseInt(data.upperLimit);
+                    lowerLimit = parseInt(data.lowerLimit);
+                });
+
+            $.get("/get_sensor_data?sensor_id="+sensor_id+"&data_type="+data_type_dropdown.value+"&time_option="+this.value, function(data){
+                data = data;
+
+                console.log(upperLimit);
+
+                make_chart(data.Sensor_ID, data.Data, data_type_dropdown.value);
+                set_summary_data(data.Summary);
+            });
+        };
+
+
+
+        limit_type_dropdown.onchange = function(){
+          var val = limit_type_dropdown.value;
+          options = document.getElementById("limits_parent").children
+
+          //Show/hide relevant elemnts
+          switch (val) {
+            case '0':
+              for (let o of options){
+                if (o.id.includes("in_temp_")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '1':
+              for (let o of options){
+                if (o.id.includes("out_hum")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '2':
+              for (let o of options){
+                if (o.id.includes("out_airpress")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '3':
+              for (let o of options){
+                if (o.id.includes("out_temp")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '4':
+              for (let o of options){
+                if (o.id.includes("in_hum")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '5':
+              for (let o of options){
+                if (o.id.includes("light")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '6':
+              for (let o of options){
+                if (o.id.includes("motion")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '7':
+              for (let o of options){
+                if (o.id.includes("noise")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '8':
+              for (let o of options){
+                if (o.id.includes("in_airpress")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '9':
+              for (let o of options){
+                if (o.id.includes("VOC")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+            case '10':
+              for (let o of options){
+                if (o.id.includes("ECO2")){
+                  o.classList.remove("d-none");
+                }
+                else{
+                  o.classList.add("d-none")
+                }
+              }
+              break;
+          }
+        }
+
+        //Fire to update starting values
+        limit_type_dropdown.onchange();
+
+        function set_summary_data(summary) {
+            // get third value from each list in the list
+
+            if (Object.keys(summary).length == 5){
+
+                // if (data[data.length - 1] > 18){  // max set to 17
+                //   document.getElementById('alert').innerHTML = "Your current " + data_type_options[data_type_dropdown.value] + " readings have exceeded the limit";
+                // }
+
+                var max = document.getElementById('max');
+                var min = document.getElementById('min');
+                // If readings are temperatures add degrees C
+                document.getElementById("no-data").innerHTML = "";
+                if (data_type_dropdown.value == 0 || data_type_dropdown.value == 3) {
+                    //document.getElementById('latest').innerHTML = "Latest: " + data[data.length - 1][0] + "°C";;
+                    max.innerHTML = "Maximum: " + summary.Max + "°C";
+                    max.setAttribute("data-bs-original-title", summary.MaxDateTime);
+
+                    min.innerHTML = "Minimum: " + summary.Min + "°C";
+                    min.setAttribute("data-bs-original-title", summary.MinDateTime);
+                    document.getElementById('avg').innerHTML = "Average: " + summary.Avg + "°C";
+                } else{
+                    //document.getElementById("latest").innerHTML = "Latest: " + data[data.length - 1][0];
+                    max.innerHTML = "Maximum: " + summary.Max;
+                    max.setAttribute("data-bs-original-title", summary.MaxDateTime);
+
+                    min.innerHTML = "Minimum: " + summary.Min;
+                    min.setAttribute("data-bs-original-title", summary.MinDateTime);
+                    document.getElementById("avg").innerHTML = "Average: " + summary.Avg;
+                }
+            }
+
+            else{ // if no data is available
+                document.getElementById("no-data").innerHTML = "No readings found";
+                document.getElementById("latest").innerHTML = "";
+                document.getElementById("max").innerHTML = "";
+                document.getElementById("min").innerHTML = "";
+                document.getElementById("avg").innerHTML = "";
+            }
+        }
+
+        function notify_user(dataset, value){
+          var msg = document.getElementById('message_warning')
+          var date = new Date(value.x - (60*60*1000)).toUTCString();
+          msg.innerHTML = "Warning! Value outside of your limits: " + value.y + " on " + date + ".";
+          msg.classList.remove("d-none")
+        }
+
+        function make_chart(sensor_id, chart_data, data_type){
+            $('#'+sensor_id).replaceWith($('<canvas id="'+sensor_id+'"></canvas>'));
+
+            var ctx = document.getElementById(sensor_id);
+
+            //Format data for chart
+            var data = [];
+            for (var i = 0; i < chart_data.length; i++) {
+                data.push({x: new Date(chart_data[i][0]).getTime(), y: parseFloat(chart_data[i][1])});
+            }
+
+
+            //Make chart
+            var chart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    datasets: [{
+                        data,
+                        indexAxis: "x",
+                        normalized: true,
+                        borderWidth: 1,
+                        pointRadius: function(context) {
+                            if (data.length > 0){
+                                var index = context.dataIndex;
+                                var value = context.dataset.data[index];
+                                if (value){
+                                    if (value.y >= upperLimit || value.y <= lowerLimit){
+                                        return 1;
+                                    }
+                                }
+                            }
+                            return 0;
+                        },
+                        borderColor: function(context) {
+                            if (data.length > 0){
+                                var index = context.dataIndex;
+                                var value = context.dataset.data[index];
+                                if (value){
+                                    if (value.y >= upperLimit || value.y <= lowerLimit){
+                                        notify_user(context.dataset, value);
+                                        return 'red';
+                                    }
+                                }
+                            }
+                            return 'darkviolet';
+                        },
+                        fill: true,
+                        pointBackgroundColor: function(context) {
+                            if (data.length > 0){
+                                var index = context.dataIndex;
+                                var value = context.dataset.data[index];
+                                if (value){
+                                    if (value.y >= upperLimit || value.y <= lowerLimit){
+                                        return 'red';
+                                    }
+                                }
+                            }
+                            return 'darkviolet';
+                        }
+                    }]
+                },
+
+                options: {
+                    layout: {padding: 20},
+                    resizeDelay: 250,
+                    responsive: true,
+                    animation: false,
+                    parsing: false,
+                    borderColor: "white",
+                    spanGaps: 1000 * 60 * 60,
+                    interaction: {
+                        mode: "index",
+                        axis: "x",
+                        intersect: false
+                    },
+                    plugins: {
+                        tooltip: {
+                            position: "nearest",
+                            titleMarginBottom: 16,
+                            bodySpacing: 8,
+                            padding: 16
+                        },
+                        legend:{display: false}
+                    },
+                    scales: {
+                        x: {
+                            type: "time",
+                            display: true,
+                            ticks: {
+                                source: "auto",
+                                maxRotation: 0,
+                                autoSkip: true,
+                                includeBounds: true,
+                                major: {enabled: true}
+                            }
+                        },
+                        y: {
+                            display: true,
+                            beginAtZero: true,
+                            ticks: {
+                                includeBounds: true,
+                                major: {enabled: true},
+                                callback: function(value, index, values) {
+                                    if (data_type_dropdown.value == 0 || data_type_dropdown.value == 3){
+                                        return value.toFixed(1) + "°";
+                                    }
+                                    else{
+                                        return value.toFixed(1);
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    onClick(e) {
+                            const activePoints = chart.getElementsAtEventForMode(e, 'nearest', {intersect: true}, false)
+                            if (activePoints.length > 0) {
+                                const [{index}] = activePoints;
+                                sidePanelInfo(chart_data[index][0]);
+                            }
+                        }
+                }
+            });
+
+            //Clear side panel if no data is present
+            if (data.length == 0) {
+                document.getElementById("side-panel-title").innerHTML = "No data available";
+
+                //remove all list elements from side panel list
+                var list = document.getElementById("side-panel-list");
+                while (list.firstChild) {
+                    list.removeChild(list.firstChild);
+                }
+                return;
+            }
+
+            sidePanelInfo(chart_data[data.length - 1][0]);
+
+        }
+
+
+        function sidePanelInfo(timestamp){
+            document.getElementById("side-panel-title").innerHTML = timestamp;
+            $.get("/get_sensor_data?sensor_id="+sensor_id+"&data_type="+"-1"+"&timestamp="+timestamp, function(data){
+                var list = document.getElementById("side-panel-list");
+
+                //clear list
+                while (list.firstChild) {
+                    list.removeChild(list.firstChild);
+                }
+
+                //Append new data to list
+                for (var key in data.Data){
+                    var li = document.createElement("li");
+                    li.innerHTML = key + ": " + data.Data[key];
+                    list.appendChild(li);
+                }
+            });
+
+        }
+
+        function deleteSensor(){
+            console.log("AASDASD");
+            $.get("/delete_sensor?sensor_id="+sensor_id, function(data){
+                alert("Sensor deleted")
+                window.location.href = "/home";
+            });
+        }
+
+
+        $(document).on('submit','#limit-form',function(e){
+            e.preventDefault();
+
+            //CSRF Protection
+            var csrf_token = "{{ csrf_token() }}";
+            $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                    }
+                }
+            });
+
+            $.ajax({
+                type:'POST',
+                url:'/updatelimit',
+                data:{
+                  sensor_id:sensor_id,
+                  in_temp_lower:$("#in_temp_lower").val(),
+                  in_temp_upper:$("#in_temp_upper").val(),
+                  out_hum_lower:$("#out_hum_lower").val(),
+                  out_hum_upper:$("#out_hum_upper").val(),
+                  out_airpress_lower:$("#out_airpress_lower").val(),
+                  out_airpress_upper:$("#out_airpress_upper").val(),
+                  out_temp_lower:$("#out_temp_lower").val(),
+                  out_temp_upper:$("#out_temp_upper").val(),
+                  in_hum_lower:$("#in_hum_lower").val(),
+                  in_hum_upper:$("#in_hum_upper").val(),
+                  light_lower:$("#light_lower").val(),
+                  light_upper:$("#light_upper").val(),
+                  motion_lower:$("#motion_lower").val(),
+                  motion_upper:$("#motion_upper").val(),
+                  noise_lower:$("#noise_lower").val(),
+                  noise_upper:$("#noise_upper").val(),
+                  in_airpress_lower:$("#in_airpress_lower").val(),
+                  in_airpress_upper:$("#in_airpress_upper").val(),
+                  VOC_lower:$("#VOC_lower").val(),
+                  VOC_upper:$("#VOC_upper").val(),
+                  ECO2_lower:$("#ECO2_lower").val(),
+                  ECO2_upper:$("#ECO2_upper").val()
+                },
+
+                success:function(){
+                  //alert('New limits set created!');
+                  var msg = document.getElementById('message');
+                  msg.innerHTML = "Updated limits successfully!";
+                  msg.classList.add("alert-success")
+                  msg.classList.remove("alert-danger");
+                  msg.classList.remove("d-none");
+                },
+
+                error:function(xhr, status, error){
+                  var msg = document.getElementById('message');
+                  msg.innerHTML = xhr.responseText;
+                  msg.classList.add("alert-danger")
+                  msg.classList.remove("d-none");
+                }
+            })
+
+            $.get("/get_sensor_limit?sensor_id="+sensor_id+"&limit="+limit_options[data_type_dropdown.value], function(data){
+                upperLimit = parseInt(data.upperLimit);
+                lowerLimit = parseInt(data.lowerLimit);
+            });
+        });
+
+</script>
+
+{% endblock %}

@@ -1,27 +1,31 @@
 #menu-open-btn{
-    font-size: 64px;
+    font-size: 60px;
 }
 
 #menu-close-btn{
     float: right;
-    font-size: 64px;
+    font-size: 40px;
+    color: #f2fee4;
+    padding-top: 0px;
+    position: relative;
 }
 
 #sidenav{
     width: 20vw;
-    height: 100vh;
+    height: 100%;
 
     position: fixed;
     top: 0;
     left: 0;
 
-    background-color: #0B7189;
+    background-color: #293c48;
 
     transform: translate3d(-100vw,0,0);
 
     transition: transform .3s cubic-bezier(0, .52, 0, 1);
 
     overflow: hidden;
+    z-index: 1;
 }
 
 #sidenav.show{
@@ -34,13 +38,20 @@
 
 #sidenav ul li{
     list-style:none;
+    left: 25%;
 }
+
 
 #sidenav ul a{
     display: block;
     text-decoration: none;
     font-size: 32px;
-    color: #000;
+    color: #f2fee4;
+}
+
+#account-btn{
+    position: absolute;
+    bottom: 50px;
 }
 
 #logout-btn{

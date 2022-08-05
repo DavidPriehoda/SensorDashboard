@@ -1,0 +1,177 @@
+{% extends "layout.html" %}
+
+
+{% block head %}
+<script src="{{url_for('static', filename='js/copy.js')}}"></script>
+
+<script type="text/javascript">
+  function show_delete_account() {
+    document.getElementById("delete-account").style.display = "block";
+  }
+
+  function hide_delete_account() {
+    document.getElementById("delete-account").style.display = "none";
+  }
+
+  function delete_account(){
+    var csrf_token = "{{ csrf_token() }}";
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+
+    $.ajax({
+      type:'POST',
+      url:'/deleteaccount',
+    })
+
+    alert('Delete Account Successful');
+
+    //redirect back to login page
+    window.location.href = '/login';
+  }
+</script>
+
+{% endblock head %}
+
+{% block content %}
+
+<div id="top-bar">
+  {% include 'includes/_navbar.html' %}
+</div>
+
+<div class="container">
+  <div class="white-box mx-auto w-50" style="min-width: 400px;">
+    <div class="row">
+      <h1>Welcome {{user.get_first_name()}}</h1>
+      <a href="{{url_for('logout')}}">Not you? - <strong>Logout</strong></a>
+    </div>
+    <!-- Personal Details -->
+    <div class="row mt-4">
+      <h2>Personal details:</h2>
+      <p>You can update your personal details here:</p>
+    </div>
+    <form id="AccountUpdateForm" class="mx-auto" method="post" action="/update_user">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="col">
+        <div class="row my-3 account_form">
+          <label for="inp_firstname"class="form_label">First name: </label>
+          <input id="inp_firstname" class="form-control w-50 mx-auto" type="text" name="first_name" value="{{ user.get_first_name() }}">
+        </div>
+        <div class="row my-3 account_form">
+          <label for="inp_lastname"class="form_label">Last name: </label>
+          <input id="inp_lastname" class="form-control w-50 mx-auto" type="text" name="last_name" value="{{ user.get_last_name() }}">
+        </div>
+        <div class="row my-3 account_form">
+          <label for="inp_email"class="form_label">E-Mail: </label>
+          <input id="inp_email" class="form-control w-50 mx-auto" type="text" name="email" value="{{ user.get_email() }}">
+        </div>
+        <div class="row my-3 account_form">
+          <label for="inp_carer"class="form_label">Carer: </label>
+          <input id="inp_carer" class="my-2" type="checkbox" name="is_carer" value="True">
+        </div>
+      </div>
+      <div class="row mt-2 account_form">
+        <input class="FormSubmit btn btn-primary w-50" type="submit" value="Update">
+      </div>
+      <div style="display:none;" class="row my-4 account_form btn btn-outline-success" disabled>
+      </div>
+
+      {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{category}} py-1 mt-2" role="alert" >
+        {{ message }}
+      </div>
+      {% endfor %}
+    </form>
+
+    <div class="row mt-4">
+      <h2>System details:</h2>
+      <hr style="width: 100px;" class="mx-auto">
+
+      <div class="account_form">
+        <label class="form_label mb-2">Your API key: </label>
+        <div class="row">
+          <div class="col">
+            <input id="inp-api-key" style="text-align:center;" class="form-control w-100 mx-2" type="text" readonly value="{{ user.get_api_key() }}">
+          </div>
+          <div class="col-auto">
+            <span class="material-icons settings-icon px-2 mx-0" data-bs-toggle="modal" data-bs-target="#help_modal">help</span>
+          </div>
+        </div>
+        <button class="btn btn-small btn-outline-primary mt-4 mx-auto" onclick="copy_api_key()">Copy to clipboard</button>
+        <p id="copy-notif"> </p>
+      </div>
+
+      <!-- Open modal -->
+      <div class="mt-2">
+        <hr style="width: 100px;" class="mx-auto">
+        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete_account_modal">Delete Account</button>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="delete_account_modal" tabindex="-1" aria-labelledby="label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modal-label">Are you sure?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p style="color:red"> Deleting data is final and cannot be undone. Continue at your own risk </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-danger" onclick="delete_account()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="help_modal" tabindex="-1" aria-labelledby="label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modal-label">API key</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+        <div class="modal-body">
+          <p>The API key is used to authenticate your requests to the server.
+            It is generated when you first login and can be found at the bottom of the Account page.</p>
+
+            <p>To send sesor data to the server you need to send a http post request to /api/new_sensor_data/ with the following content:</p>
+            <p>[API KEY, {'SENSOR_EUI': 'id of sensor', 'sensor attribute': value, 'sensor attribute': value, ...}]</p>
+
+            <p>The possible sensor attributes are:</p>
+            <ul>
+              <li>OUTSIDE_TEMP</li>
+              <li>OUTSIDE_HUMIDITY</li>
+              <li>OUTSIDE_AIRPRESSURE</li>
+              <li>IDENTIFIER_DESCRIPTION</li>
+              <li>REPORTED_TEMP</li>
+              <li>REPORTED_HUMIDITY</li>
+              <li>LIGHT</li>
+              <li>MOTION</li>
+              <li>NOISE</li>
+              <li>AIR_PRESSURE</li>
+              <li>VOC</li>
+              <li>ECO2</li>
+            </ul>
+        </div>
+    </div>
+  </div>
+</div>
+
+
+<script type="text/javascript">
+  // Set carer check box to appropriate value
+  $('#inp_carer').prop('checked', '{{ user.Is_Carer }}' === 'True' ? true : false);
+</script>
+{% endblock content %}

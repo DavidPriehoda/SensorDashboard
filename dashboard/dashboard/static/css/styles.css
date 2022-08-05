@@ -1,20 +1,78 @@
 body {
-    background-color: #EEE0CB;
-    margin: 0;
-    padding: 0;
-    font-family: 'Roboto', sans-serif;
-    color: #000;
+  background-color: #729CE9 !important;
+  margin: 10px;
+  padding: 0;
+  color: #000;
+  overflow-x: hidden;
 }
 
-/* Login form */
+input[type=checkbox] {
+  transform: scale(1.5);
+}
+
+#no-sensor-warning{
+  text-align: center;
+  font-weight: bold;
+}
+
+#PrivacyPolicy{
+  padding: 2rem;
+}
+
+#copy-notif{
+  color: green;
+  transition: 1s;
+  margin: 0px;
+}
+
+#content{
+}
+
+
+.sensor_data_label{
+  float:right;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+.alert{
+  text-align: center;
+}
+
+.subheading{
+  text-align: center;
+  color: lightgrey;
+  margin-top: 0.5rem;
+}
+
+.material-icons{
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 0.5rem;
+}
+
+.material-icons:hover{
+  background-color: rgba(0,0,0, 0.3);
+  transition: 0.4s;
+  color: lightgrey;
+}
+
+.form-row{
+  padding-bottom: 5px;
+}
+
+.form-check-label{
+  padding: 5px;
+}
+
 .login-form-container{
-    width: 450px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    padding: 25px;
-  }
+  width: 450px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 25px;
+}
 
 .login-form-container h2{
   text-align: center;
@@ -34,34 +92,67 @@ body {
   font-weight: 300;
   outline: 0;
   border: 0;
-  border-bottom: 1px solid #0B7189;
+  border-bottom: 1px solid #253d48;
   background: rgba(0, 0, 0, 0);
   color: #000;
 }
 
-.login-form label {
-  padding: 12px 12px 12px 0;
-  display: inline-block;
-  font-size: 20px;
+
+.page-container{
+  text-align: center;
+  max-width: 600px;
+  margin: auto;
 }
 
-.login-form input[type=submit] {
-  background-color: #0B7189;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
+.account_forms_label{
+  margin: auto !important;
+  font-weight: bold;
+  text-align: right;
+}
+
+.lbl-row{
+  height: 33%;
+}
+
+.account_forms_elements{
+  padding: 8px 5px;
+  border-radius: 5px;
+  width: 70% !important;
+}
+
+.btn-small{
+  margin-left: 1rem;
+  padding: 8px 5px;
+  border-radius: 5px;
+}
+
+.btn-small:hover{
+  background-color: lightgrey;
   cursor: pointer;
-  float: right;
 }
 
-.login-form input[type=submit]:hover {
-  background-color: #333533;
+.account_form{
+  margin-top: 2rem;
 }
-/*  */
 
+#delete-account{
+  display: none;
+  width: 450px;
+  height: 330px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+}
 
-/* Welcome page */
+.FormSubmit{
+  width: 50%;
+  margin: auto;
+  font-size: 18px;
+  padding-top: 5px;
+}
+
 #welcome-page{
   position: absolute;
   left: 50%;
@@ -82,11 +173,203 @@ body {
   0%{transform: translateY(-1000%);}
   100% {transform: translateY(0%);}
 }
-/*  */
 
 
-.graphBox{
+/* .graphBox{
   position: absolute;
   left: 30%;
   width: 600px;
+} */
+
+
+.message1{
+  position: relative;
+  text-align: center;
+  display: table-cell;
+  vertical-align: middle;
+  top: -210px;
+  width: 600px;
+  color:red;
+}
+
+.message2{
+  color:red;
+}
+
+
+.login-inner {
+  background: #FFF;
+  max-width: 500px;
+  border-radius: 5px;
+  min-width: 20rem;
+}
+
+.form-group{
+  float:left;
+  width:100%;
+}
+.copy-text {
+  float: left;
+  width: 100%;
+  border-top: 1px solid #e9e4e4;
+  padding: 17px 0px 0px;
+  text-align: center;
+  margin: 4px 0px 0px;
+}
+
+.login-title{
+  margin: 0 auto;
+  text-align: center;
+
+}
+
+.login-remember{
+  margin: 0 auto;
+  text-align: center;
+
+}
+
+
+.login-register{
+  margin: 0 auto;
+  text-align: center;
+
+}
+.message{
+  position: absolute;
+  top:39%;
+  left:45%;
+  color:red;
+}
+.submit{
+  text-align: center;
+}
+
+.sensor-container{
+  max-width: 100% !important;
+}
+
+.white-box {
+  background: #FFF;
+  border-radius: 1rem;
+  max-width: 1000px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.chart-style {
+  width: 90%;
+  float:left;
+  position: relative;
+  min-height: 1px;
+  padding-right: 0px;
+  padding-left: 120px;
+  padding-top: 15px;
+  box-sizing: border-box;
+}
+.header-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 19px;
+  margin-bottom: 20px;
+  margin-top: 0;
+  color:#253d48
+}
+.chartBox{
+  padding: 0rem;
+  margin: 0.5rem;
+}
+.graphBox{
+  padding-bottom: 5px;
+
+}
+
+.patient_entry:hover{
+  cursor: pointer;
+  background-color: #92BCFB;
+  transition: 0.5s;
+  border-radius: 5px;
+  color: white;
+}
+
+.chart-title{
+  font-size: 20px;
+  position: relative;
+  text-align: center;
+  color:#253d48
+}
+
+.info-list{
+  list-style: none;
+}
+
+.settings-icon{
+  float:right;
+  transform: scale(1.5);
+}
+
+.chart-sum{
+  font-size: 20px;
+  position: relative;
+  text-align: center;
+  color:#253d48
+}
+
+.grid-item{
+  cursor: pointer;
+  max-width: 600px !important;
+  min-width: 400px;
+}
+
+.grid-item:hover{
+
+}
+
+.add-button{
+  font-size: 60px;
+  float: right;
+}
+
+#new-sensor-form{
+  display: none;
+  width: 450px;
+  height: 330px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  background: #293c48;
+}
+
+.add-sensor{
+  font-size: 30px;
+  margin-top: 50px;
+  position: relative;
+  text-align: center;
+  color:#ffffff
+}
+
+.sensor-input{
+  font-size: 24px;
+  position: relative;
+  text-align: center;
+  left:16%;
+  border-radius: 5px;
+}
+
+.sensor-submit{
+  padding: 2px 110px;
+  font-size: 25px;
+  position: relative;
+  text-align: center;
+  left:16%;
+  border-radius: 5px;
+}
+
+.select-button{
+  position: relative;
+  margin:0 auto;
+  text-align: center;
+  display:flex;
 }

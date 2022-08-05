@@ -1,47 +1,45 @@
-<!DOCTYPE html>
-<html>
-  
-  <head>
-    <link rel=stylesheet type=text/css href="{{ url_for('static',filename='css/navbar.css') }}">
-  </head>
-  
-  <body>
-    <div id="sidenav">
-      <span class="material-icons" id="menu-close-btn">close</span>
-      <ul>
-        <li><a href="#">MENU 1</a></li>
-        <li><a href="#">MENU 2</a></li>
-        <li><a href="#">MENU 3</a></li>
-        <li><a href="#">MENU 4</a></li>
-        <li id="logout-btn"><a href="/login">LOG OUT</a></li>
-      </ul>
-    </div>
-    <span class="material-icons" id="menu-open-btn">menu</span>
+<style media="screen">
+  @media only screen and (max-width: 600px) {
+  #sidenav {
+    width: 96% !important;
+  }
+}
+</style>
+<link rel=stylesheet type=text/css href="{{ url_for('static',filename='css/navbar.css') }}">
+
+<div id="sidenav" onload="hidemenu()">
+  <span class="material-icons" id="menu-close-btn">close</span>
+  <ul>
+    <br>
+    <li id="switch"><a href="/home">Home</a></li>
+    <br>
+    <li id="switch"><a href="/Account">Account</a></li>
+    <br>
+    {% if not current_user.Is_Carer %}
+    <li id="switch"><a href="/carers">Your carers</a></li>
+    {% else %}
+    <li id="switch"><a href="/your_patients">Your Patients</a></li>
+    {% endif %}
+    <br>
+    <li id="switch"><a href="/logout">Logout</a></li>
+  </ul>
+</div>
+<span class="material-icons" id="menu-open-btn">menu </span>
 
 
-    <script>
-      var menuButton = document.querySelector("#menu-open-btn");
-      var closeButton = document.querySelector("#menu-close-btn");
-      var menu = document.querySelector("#sidenav");
+<script>
+  var menuButton = document.querySelector("#menu-open-btn");
+  var closeButton = document.querySelector("#menu-close-btn");
+  var menu = document.querySelector("#sidenav");
+  menuButton.addEventListener("click", showmenu, false);
+  closeButton.addEventListener("click", hidemenu, false);
 
-      menuButton.addEventListener("click", showmenu, false);
-      closeButton.addEventListener("click",hidemenu, false);
+  function showmenu(e){
+    menu.classList.add("show");
+  }
 
-      function showmenu(e){
-        menu.classList.add("show");
-        document.body.style.overflow = "hidden";
-      }
-
-      function hidemenu(e){
-        menu.classList.remove("show");
-        e.stopPropagation();
-
-        document.body.style.overflow = "auto";
-      }
-
-
-    </script>
-
-  </body>
-</html>
-
+  function hidemenu(e){
+    menu.classList.remove("show");
+    //e.stopPropagation();
+  }
+</script>

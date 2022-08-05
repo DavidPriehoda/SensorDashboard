@@ -1,28 +1,42 @@
 {% extends "layout.html" %}
 
+{% block head %}
+{% endblock head %}
+
 {% block content %}
-<div class="login-form-container">
-  <h2>Login</h2>
+<section class="login-section">
+  <div class="login-inner w-50 mx-auto px-4 py-5 mt-5">
+    <h2 class="login-title">Login</h2>
+    <br>
+    <form method="POST" action="/login" class="login-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="row form-row">
+        {{ form.email(placeholder="Email")}}
+      </div>
+      <div class="row form-row">
+        {{ form.password(placeholder="Password") }}
+      </div>
+      {% for category, message in get_flashed_messages(with_categories=true) %}
+      <div class="alert alert-{{category}} py-1 mt-2" role="alert" >
+        {{ message }}
+      </div>
+      {% endfor %}
+      <!-- <div class="login-remember">
+           <label>Remember me</label>
+           {{ form.remember }}
+      </div> -->
 
-  <form method="POST" action="/login" class="login-form">
-
-    {{ form.csrf_token }}
-
-    <div class="row">
-      {{ form.username(placeholder="Username")}}
+      <div class="login-submit">
+        {{ form.submit }}
+      </div>
+      <br>
+      <div class="login-register">
+       Don't have an account?  <a href="/register">Sign Up </a>
+      </div>
+    </form>
+    <div class="copy-text">
+      <p class="">2022 &copy; Group 25</p>
     </div>
-
-    <div class="row">
-      {{ form.password(placeholder="Password") }}
-    </div>
-
-    <div class="row">
-      <label>Remember me</label>
-      {{ form.remember }}
-  
-      {{ form.submit }}
-    </div>
-
-  </form>
-</div>
+  </div>
+</section>
 {% endblock content %}

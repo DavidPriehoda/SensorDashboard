@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<div id="navbar">
+    {% include 'includes/_navbar.html' %}
+</div>
+
+
+<div id="container" class="mx-auto" style="width: 80%">
+
+    <div id="your-patients" class="white-box mx-auto">
+        <h3>Your Patients</h3>
+        <p>Looking to add a patient? Ask them to enter your email in their 'Carer' settings.</p>
+        <table class="table table-striped" id="patient-table">
+            <thead>
+                <tr>
+                    <th scope="col">User ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col" style="width: 10%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in current_user.get_patients() %}
+                <tr id="{{ patient.id }}" onclick="go_to_patient('{{ patient.id }}')" class="patient_entry">
+                    <td>{{ patient.id }}</td>
+                    <td>{{ patient.get_first_name() }} {{ patient.get_last_name() }}</td>
+                    <td>{{ patient.get_email() }}</td>
+                    <td><span class="material-icons" onclick="delete_patient('{{patient.id}}')">delete</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if current_user.get_patients() == [] %}
+        <p>You have no patients</p>
+        {% endif %}
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+
+
+function delete_patient(patient_id) {
+    var carer_id = '{{ current_user.id }}';
+
+    var csrf_token = "{{ csrf_token() }}";
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrf_token);
+            }
+        }
+    });
+
+    $.ajax({
+        type: 'POST',
+        url: '/deletecarer',
+        data: {
+            carer_id: carer_id,
+            patient_id: patient_id
+        },
+        success:function(data) {
+            document.getElementById(patient_id).remove();
+        }
+
+    });
+}
+
+function go_to_patient(patient_id) {
+    window.location.href = '/patient/' + patient_id;
+}
+
+</script>
+
+
+
+{% endblock %}

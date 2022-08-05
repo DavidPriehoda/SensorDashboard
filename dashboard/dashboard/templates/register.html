@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block head %}
+{% endblock head %}
+
+{% block content %}
+<section class="login-section">
+  <div class="login-inner w-50 mx-auto px-4 py-5 mt-5">
+  <h2 class="login-title">Register</h2>
+  <br>
+  <form method="POST" action="/register" class="login-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+      <div class="row form-row">
+        {{ form.first_name(placeholder="First Name")}}
+      </div>
+      <div class="row form-row">
+        {{ form.last_name(placeholder="Last Name")}}
+      </div>
+      <div class="row form-row">
+          {{ form.email(placeholder="Email")}}
+      </div>
+      <div class="row form-row">
+        {{ form.password(placeholder="Password") }}
+      </div>
+      <div class="row form-row">
+        {{ form.confirm(placeholder="Confirm Password") }}
+      </div>
+      <br>
+      <div class ="row">
+        <div class="form-check">
+          {{ form.tick}}
+          <label class="form-check-label" for="tos-check">Click here to agree to the <a href="/PP"
+            target="popup"
+            onclick="window.open('/PP','popup','width=600,height=600');">Privacy Policy</a> and <a href="/TC"
+            target="popup"
+            onclick="window.open('/TC','popup','width=600,height=600');">Terms and conditions</a>
+          </label>
+        </div>
+      </div>
+      <div class="login-register">
+        Already have an account?  <a href="/login">Login</a>
+       </div>
+     {% for category, message in get_flashed_messages(with_categories=true) %}
+     <div class="alert alert-{{category}} py-1 mt-2" role="alert" >
+       {{ message }}
+     </div>
+     {% endfor %}
+      <div class="login-submit">
+        {{ form.submit }}
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock content %}

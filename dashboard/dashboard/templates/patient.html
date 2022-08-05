@@ -5,40 +5,6 @@
     function go_to_sensor(sensor_id){
         window.location.href = '/sensor/'+sensor_id;
     }
-
-    $(document).on('submit','#sensor-form',function(e){
-        e.preventDefault();
-
-        if (document.getElementById("sensor-name-field").value == ""){
-            alert("Please enter a sensor name");
-            return;
-        }
-
-        //CSRF Protection
-        var csrf_token = "{{ csrf_token() }}";
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-                }
-            }
-        });
-
-        $.ajax({
-            type:'POST',
-            url:'/newsensor',
-            data:{sensor_name:$("#sensor-name-field").val()},
-
-            success:function(){
-              //alert('New sensor created');
-              var msg = document.getElementById('message');
-              msg.classList.add("alert-success");
-              msg.classList.remove("d-none");
-              msg.innerHTML = "New sensor created! Refresh to see changes";
-              $('#new_sensor_modal').modal('hide');
-            }
-        })
-    });
 </script>
 {% endblock head %}
 
@@ -52,18 +18,15 @@
             <p style="color:#FF0000"><strong>Warning!</strong> You need to enable JavaScript to use this site.</p>
         </div>
     </noscript>
-
-    <span class="material-icons add-button" id="add-sensor-button" data-bs-toggle="modal" data-bs-target="#new_sensor_modal">add</span>
 </div>
 
 
 {% if sensors|length == 0%}
-    <p id="no-sensor-warning">You have no sensors!</p>
+    <p id="no-sensor-warning">User has no sensors!</p>
 {% else %}
 <div id="container" class="mx-auto">
   <div class="row" style="text-align: center;">
-    <h1 class=" mx-auto">All sensors</h1>
-    <p>You can view all of your registered sensors here.</p>
+    <h1 class=" mx-auto">All sensors for {{ patient.get_first_name() }} {{ patient.get_last_name() }}</h1>
   </div>
   <div class="row px-5 mb-4 justify-content-evenly">
       {% for sensor in sensors %}
@@ -82,40 +45,6 @@
   </div>
   </div>
 {% endif %}
-
-
-<div id="message" class="d-none alert w-50 py-1 mx-auto">
-
-</div>
-
-{% for category, message in get_flashed_messages(with_categories=true) %}
-<div class="alert alert-{{category}} py-1 mt-2" role="alert" >
-  {{ message }}
-</div>
-{% endfor %}
-
-<!-- Modal -->
-<div class="modal fade" id="new_sensor_modal" tabindex="-1" aria-labelledby="label" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modal-label">Add new sensor</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <form method="POST" id="sensor-form">
-        <div class="modal-body">
-          <p>Here you can create a sensor for viewing on the home page.</p>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-          <input class="form-control" type="text" name="sensor-name" id="sensor-name-field" placeholder="Sensor name">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <input type="submit" class="btn btn-success" value="Create sensor">
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 
 <script>
     {% for sensor in sensors %}
